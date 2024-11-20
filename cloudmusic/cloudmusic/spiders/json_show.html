@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ECharts Artist Song Count Pie Chart</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.3.2/echarts.min.js"></script>
+</head>
+<body>
+    <div id="main" style="width: 1500px;height:800px;"></div>
+    <script type="text/javascript">
+        var myChart = echarts.init(document.getElementById('main'));
+
+        var jsonDataUrl = 'response.json';
+
+        fetch(jsonDataUrl)
+            .then(response => response.json())
+            .then(data => {
+                processAndDrawChart(data);
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+
+        function processAndDrawChart(data) {
+            var artistCount = {};
+
+            data.forEach(item => {
+                // 遍历每个艺术家
+                item.artists.forEach(artist => {
+                    var artistName = artist.name.trim(); // 获取艺术家名称并去掉空格
+                    artistCount[artistName] = (artistCount[artistName] || 0) + 1; // 统计数量
+                });
+            });
+
+            var artistNames = Object.keys(artistCount).sort((a, b) => artistCount[b] - artistCount[a]);
+            var counts = artistNames.map(artist => artistCount[artist]);
+
+            var option = {
+                title: {
+                    text: '热歌榜TOP200创作歌曲数的作者分布',
+                    left: 'left'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b} : {c} ({d}%)'
+                },
+                series: [{
+                    name: '歌曲数量',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    data: artistNames.map((name, idx) => ({
+                        value: counts[idx],
+                        name: name
+                    })),
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+
+            myChart.setOption(option);
+        }
+    </script>
+</body>
+</html>
